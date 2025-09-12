@@ -1,0 +1,10 @@
+# Header-only pkg-config file
+prefix=/usr
+exec_prefix=${prefix}
+includedir=${prefix}/include
+
+Name: southbound-api
+Description: Southbound adapter API C++ interfaces (header-only)
+Version: @PV@
+Cflags: -I${includedir}/southbound
+Libs: 
