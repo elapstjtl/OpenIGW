@@ -1,0 +1,9 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+
+Name: modbus-adapter
+Description: Modbus protocol adapter for southbound framework
+Version: @PV@
+Libs: -L${libdir} -lmodbus-adapter
+Requires: southbound-api libmodbus
