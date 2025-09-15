@@ -22,8 +22,8 @@ inherit cmake pkgconfig
 EXTRA_OECMAKE += "-DCMAKE_BUILD_TYPE=Release -DPV=${PV}"
 
 # 打包
-FILES:${PN} += "${libdir}/libmodbus-adapter.so.*"
-FILES:${PN}-dev += "${libdir}/libmodbus-adapter.so ${libdir}/pkgconfig/modbus-adapter.pc"
+FILES:${PN} += "${libdir}/libmodbus-adapter.so.* ${libdir}/southbound/plugins/libmodbus-adapter.so.*"
+FILES:${PN}-dev += "${libdir}/libmodbus-adapter.so ${libdir}/pkgconfig/modbus-adapter.pc ${libdir}/southbound/plugins/libmodbus-adapter.so"
 
 # 开发包依赖
 RDEPENDS:${PN}-dev = "southbound-api-dev libmodbus-dev"

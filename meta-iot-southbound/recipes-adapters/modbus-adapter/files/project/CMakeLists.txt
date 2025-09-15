@@ -45,7 +45,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/modbus-adapter.pc.in ${CMAKE_BINARY_D
 
 # 安装规则
 install(TARGETS modbus-adapter
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/southbound/plugins
 )
 install(FILES ${CMAKE_BINARY_DIR}/modbus-adapter.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
