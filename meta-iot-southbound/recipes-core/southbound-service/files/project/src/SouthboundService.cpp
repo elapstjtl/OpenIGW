@@ -1,20 +1,34 @@
-#include "SouthboundService.hpp"
+#include "../Inc/SouthboundService.hpp"
 #include <iostream>
 #include <chrono>
 #include <signal.h>
 
 namespace southbound {
 
+/**
+ * @brief 构造函数
+ * @details 初始化南向服务，创建插件管理器和配置管理器实例
+ */
 SouthboundService::SouthboundService() 
     : m_running(false), m_initialized(false) {
     m_plugin_manager = std::make_unique<PluginManager>();
     m_config_manager = std::make_unique<ConfigManager>();
 }
 
+/**
+ * @brief 析构函数
+ * @details 停止服务并清理资源
+ */
 SouthboundService::~SouthboundService() {
     stop();
 }
 
+/**
+ * @brief 初始化服务
+ * @param config_file 配置文件路径
+ * @return true 初始化成功，false 初始化失败
+ * @details 加载配置、验证配置、加载插件、初始化设备适配器
+ */
 bool SouthboundService::initialize(const std::string& config_file) {
     std::lock_guard<std::mutex> lock(m_mutex);
     
@@ -51,6 +65,11 @@ bool SouthboundService::initialize(const std::string& config_file) {
     return true;
 }
 
+/**
+ * @brief 启动服务
+ * @return true 启动成功，false 启动失败
+ * @details 连接所有设备，启动工作线程
+ */
 bool SouthboundService::start() {
     std::lock_guard<std::mutex> lock(m_mutex);
     
@@ -78,6 +97,10 @@ bool SouthboundService::start() {
     return true;
 }
 
+/**
+ * @brief 停止服务
+ * @details 停止工作线程，断开所有设备连接，清理资源
+ */
 void SouthboundService::stop() {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -101,10 +124,23 @@ void SouthboundService::stop() {
     log(1, "Service stopped");
 }
 
+/**
+ * @brief 检查服务是否运行
+ * @return true 正在运行，false 已停止
+ * @details 返回服务的运行状态
+ */
 bool SouthboundService::is_running() const {
     return m_running;
 }
 
+/**
+ * @brief 读取设备数据
+ * @param device_name 设备名称
+ * @param tags 要读取的标签列表
+ * @param values 输出的数据值列表
+ * @return 操作状态码
+ * @details 从指定设备读取指定标签的数据值
+ */
 StatusCode SouthboundService::read_device_data(const std::string& device_name, 
                                              const std::vector<DeviceTag>& tags, 
                                              std::vector<DataValue>& values) {
@@ -117,6 +153,13 @@ StatusCode SouthboundService::read_device_data(const std::string& device_name,
     return adapter->read(tags, values);
 }
 
+/**
+ * @brief 写入设备数据
+ * @param device_name 设备名称
+ * @param tags_and_values 标签和值的映射
+ * @return 操作状态码
+ * @details 向指定设备写入标签和对应的数据值
+ */
 StatusCode SouthboundService::write_device_data(const std::string& device_name, 
                                               const std::map<DeviceTag, DataValue>& tags_and_values) {
     IAdapter* adapter = get_device_adapter(device_name);
@@ -128,6 +171,14 @@ StatusCode SouthboundService::write_device_data(const std::string& device_name,
     return adapter->write(tags_and_values);
 }
 
+/**
+ * @brief 订阅设备数据
+ * @param device_name 设备名称
+ * @param tags 要订阅的标签列表
+ * @param callback 数据接收回调函数
+ * @return 操作状态码
+ * @details 订阅指定设备的数据变化，通过回调函数接收数据
+ */
 StatusCode SouthboundService::subscribe_device_data(const std::string& device_name, 
                                                   const std::vector<DeviceTag>& tags, 
                                                   OnDataReceivedCallback callback) {
@@ -140,6 +191,11 @@ StatusCode SouthboundService::subscribe_device_data(const std::string& device_na
     return adapter->subscribe(tags, callback);
 }
 
+/**
+ * @brief 获取服务状态
+ * @return 服务状态字符串
+ * @details 返回服务的详细状态信息，包括运行状态、插件数量、设备数量等
+ */
 std::string SouthboundService::get_service_status() const {
     std::lock_guard<std::mutex> lock(m_mutex);
     
@@ -152,6 +208,10 @@ std::string SouthboundService::get_service_status() const {
     return status;
 }
 
+/**
+ * @brief 工作线程函数
+ * @details 后台工作线程，定期检查设备状态，处理后台任务
+ */
 void SouthboundService::worker_thread_func() {
     log(1, "Worker thread started");
     
@@ -174,6 +234,11 @@ void SouthboundService::worker_thread_func() {
     log(1, "Worker thread stopped");
 }
 
+/**
+ * @brief 初始化设备适配器
+ * @return true 初始化成功，false 初始化失败
+ * @details 为每个配置的设备创建对应的适配器实例并初始化
+ */
 bool SouthboundService::initialize_device_adapters() {
     const std::vector<DeviceConfig>& devices = m_config_manager->get_all_devices();
     
@@ -203,6 +268,11 @@ bool SouthboundService::initialize_device_adapters() {
     return true;
 }
 
+/**
+ * @brief 连接所有设备
+ * @return true 连接成功，false 连接失败
+ * @details 尝试连接所有已初始化的设备适配器
+ */
 bool SouthboundService::connect_all_devices() {
     for (const auto& pair : m_device_adapters) {
         const std::string& device_name = pair.first;
@@ -220,6 +290,10 @@ bool SouthboundService::connect_all_devices() {
     return true;
 }
 
+/**
+ * @brief 断开所有设备连接
+ * @details 断开所有设备连接并销毁适配器实例
+ */
 void SouthboundService::disconnect_all_devices() {
     for (auto it = m_device_adapters.begin(); it != m_device_adapters.end(); ++it) {
         const std::string& device_name = it->first;
@@ -241,6 +315,12 @@ void SouthboundService::disconnect_all_devices() {
     m_device_plugin_map.clear();
 }
 
+/**
+ * @brief 获取设备适配器
+ * @param device_name 设备名称
+ * @return 设备适配器指针，未找到返回nullptr
+ * @details 根据设备名称查找对应的适配器实例
+ */
 IAdapter* SouthboundService::get_device_adapter(const std::string& device_name) const {
     std::lock_guard<std::mutex> lock(m_mutex);
     
@@ -252,6 +332,12 @@ IAdapter* SouthboundService::get_device_adapter(const std::string& device_name) 
     return it->second;
 }
 
+/**
+ * @brief 输出日志信息
+ * @param level 日志级别（0=ERROR, 1=INFO, 2=DEBUG）
+ * @param message 日志消息
+ * @details 根据配置的日志级别输出日志信息
+ */
 void SouthboundService::log(int level, const std::string& message) const {
     const ServiceConfig& config = m_config_manager->get_service_config();
     
@@ -262,4 +348,3 @@ void SouthboundService::log(int level, const std::string& message) const {
 }
 
 } // namespace southbound
-

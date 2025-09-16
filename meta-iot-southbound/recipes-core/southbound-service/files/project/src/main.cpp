@@ -1,4 +1,4 @@
-#include "SouthboundService.hpp"
+#include "../Inc/SouthboundService.hpp"
 #include <iostream>
 #include <string>
 #include <signal.h>
@@ -14,18 +14,30 @@ using namespace southbound;
 std::unique_ptr<SouthboundService> g_service;
 volatile sig_atomic_t g_reload_requested = 0;
 
-// 终止信号处理
+/**
+ * @brief 终止信号处理函数
+ * @param signal 接收到的信号值
+ * @details 处理SIGINT和SIGTERM信号，实现优雅关闭服务
+ */
 void term_handler(int signal) {
     std::cout << "\nReceived signal " << signal << ", shutting down..." << std::endl;
     if (g_service) g_service->stop();
 }
 
-// 配置重载信号处理
+/**
+ * @brief 配置重载信号处理函数
+ * @param signal 接收到的信号值
+ * @details 处理SIGHUP信号，设置配置重载标志
+ */
 void hup_handler(int signal) {
     if (signal == SIGHUP) g_reload_requested = 1;
 }
 
-// 打印使用说明
+/**
+ * @brief 打印使用说明
+ * @param program_name 程序名称
+ * @details 显示程序的命令行选项和使用示例
+ */
 void print_usage(const char* program_name) {
     std::cout << "Usage: " << program_name << " [OPTIONS]\n"
               << "Options:\n"
@@ -41,7 +53,10 @@ void print_usage(const char* program_name) {
               << std::endl;
 }
 
-// 打印版本信息
+/**
+ * @brief 打印版本信息
+ * @details 显示程序的版本信息和版权声明
+ */
 void print_version() {
     std::cout << "Southbound Service v1.0.0\n"
               << "Copyright (C) 2024 Southbound Framework\n"
@@ -49,6 +64,13 @@ void print_version() {
               << std::endl;
 }
 
+/**
+ * @brief 主程序入口函数
+ * @param argc 命令行参数个数
+ * @param argv 命令行参数数组
+ * @return 程序退出码，0表示成功，非0表示失败
+ * @details 解析命令行参数，初始化服务，处理信号，支持守护进程模式
+ */
 int main(int argc, char* argv[]) {
     // 默认配置
     std::string config_file = "/etc/southbound/southbound.conf";
@@ -185,5 +207,9 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-// SIGHUP信号处理函数
+/**
+ * @brief SIGHUP信号处理函数（未使用）
+ * @param signal 接收到的信号值
+ * @details 此函数已废弃，SIGHUP信号由hup_handler处理
+ */
 void sighup_handler(int) {}

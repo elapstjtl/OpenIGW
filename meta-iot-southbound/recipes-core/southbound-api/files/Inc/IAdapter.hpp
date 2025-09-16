@@ -39,6 +39,11 @@ public:
 	virtual StatusCode subscribe(const std::vector<DeviceTag> &tags, OnDataReceivedCallback callback) = 0;
 
 	/**
+	 * [异步] 取消订阅数据变化
+	 */
+	virtual StatusCode unsubscribe() = 0;
+
+	/**
 	 * 获取当前适配器的健康状态
 	 */
 	virtual StatusCode get_status() = 0;

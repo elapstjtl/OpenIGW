@@ -16,6 +16,7 @@ find_package(Threads REQUIRED)
 
 # 包含目录
 include_directories(${SOUTHBOUND_API_INCLUDE_DIRS})
+include_directories(Inc)
 
 # 源文件
 set(SOURCES

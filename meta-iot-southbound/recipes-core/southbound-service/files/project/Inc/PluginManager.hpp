@@ -45,12 +45,6 @@ public:
     void unload_plugin(const std::string& plugin_name);
 
     /**
-     * @brief （兼容旧接口）获取单例适配器实例
-     * 现已废弃：始终返回nullptr，请改用 create_adapter_instance()
-     */
-    IAdapter* get_adapter(const std::string& plugin_name);
-
-    /**
      * @brief 创建一个新的适配器实例（调用插件工厂）
      * @param plugin_name 插件名称（例如 "modbus-adapter"）
      * @return 适配器实例指针；失败返回nullptr

@@ -25,6 +25,7 @@ public:
     virtual StatusCode write(const std::map<DeviceTag, DataValue>& tags_and_values) override;
     virtual StatusCode subscribe(const std::vector<DeviceTag>& tags, OnDataReceivedCallback callback) override;
     virtual StatusCode get_status() override;
+    virtual StatusCode unsubscribe() override;
 
 private:
     // Modbus 相关
@@ -32,14 +33,13 @@ private:
     std::string m_connection_type;  // "rtu" or "tcp"
     std::string m_device_path;      // 串口设备路径 (RTU)
     std::string m_ip_address;       // IP 地址 (TCP)
+    std::chrono::milliseconds m_poll_interval{1000}; // 循环时间，默认1秒
     int m_port;                     // 端口号 (TCP)
     int m_slave_id;                 // 从站 ID
     int m_baudrate;                 // 波特率 (RTU)
     char m_parity;                  // 校验位 (RTU)
     int m_data_bits;                // 数据位 (RTU)
     int m_stop_bits;                // 停止位 (RTU)
-
-    std::chrono::milliseconds m_poll_interval{1000}; // 循环时间，默认1秒
     
     // 状态管理
     std::atomic<bool> m_connected{false};

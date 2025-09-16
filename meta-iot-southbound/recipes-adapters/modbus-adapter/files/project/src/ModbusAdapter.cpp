@@ -188,6 +188,26 @@ StatusCode ModbusAdapter::subscribe(const std::vector<DeviceTag>& tags, OnDataRe
 }
 
 /**
+ * 手动停止订阅线程
+ * 停止当前运行的订阅线程并清理相关资源
+ * @return StatusCode::OK 成功停止
+ */
+StatusCode ModbusAdapter::unsubscribe() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    
+    if (m_subscription_thread.joinable()) {
+        m_subscription_active = false;
+        m_subscription_thread.join();
+    }
+    
+    m_subscribed_tags.clear();
+    m_callback = nullptr;
+    
+    return StatusCode::OK;
+}
+
+
+/**
  * 获取当前连接状态
  * @return NotInitialized/NotConnected/OK
  */
@@ -435,7 +455,7 @@ StatusCode ModbusAdapter::write_register(const DeviceTag& tag, const DataValue& 
  */
 void ModbusAdapter::subscription_worker() {
     while (m_subscription_active) {
-        std::this_thread::sleep_for(m_poll_interval); // 1秒轮询
+        std::this_thread::sleep_for(m_poll_interval); // 设置轮询时间
         
         // 已连接且回调函数已设置
         if (!m_connected || !m_callback) {
@@ -459,7 +479,11 @@ void ModbusAdapter::subscription_worker() {
     }
 }
 
-void set_poll_interval(std::chrono::milliseconds interval) {
+/**
+ * 设置订阅线程的轮询时间
+ * @param interval 轮询时间 1ms为单位
+ */
+void ModbusAdapter::set_poll_interval(std::chrono::milliseconds interval) {
     m_poll_interval = interval;
 }
 
